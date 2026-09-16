@@ -1,0 +1,192 @@
+[
+  {
+    "id": "flow-ChangeRequest-approval",
+    "name": "ChangeRequest Approval Flow",
+    "description": "Auto-generated approval flow for ChangeRequest. Customize email templates and add conditions as needed.",
+    "resourceName": "ChangeRequest",
+    "enabled": true,
+    "variables": [
+      {
+        "name": "assigneeEmail",
+        "type": "string",
+        "defaultValue": ""
+      },
+      {
+        "name": "creatorEmail",
+        "type": "string",
+        "defaultValue": ""
+      },
+      {
+        "name": "departmentEmails",
+        "type": "string",
+        "defaultValue": ""
+      },
+      {
+        "name": "formLink",
+        "type": "string",
+        "defaultValue": ""
+      }
+    ],
+    "nodes": [
+      {
+        "id": "ChangeRequest-approval-trigger",
+        "type": "trigger",
+        "label": "On ChangeRequest Submit",
+        "position": {
+          "x": 300,
+          "y": 50
+        },
+        "trigger": {
+          "type": "on-field-change",
+          "resourceName": "ChangeRequest",
+          "fieldName": "status"
+        }
+      },
+      {
+        "id": "ChangeRequest-approval-condition",
+        "type": "condition",
+        "label": "Status = PendingFirstApproval?",
+        "position": {
+          "x": 300,
+          "y": 160
+        },
+        "condition": {
+          "logic": "and",
+          "rules": [
+            {
+              "field": "triggerData.status",
+              "operator": "equals",
+              "value": "1"
+            }
+          ]
+        }
+      },
+      {
+        "id": "ChangeRequest-approval-approval",
+        "type": "approval",
+        "label": "ChangeRequest Approval",
+        "position": {
+          "x": 300,
+          "y": 280
+        },
+        "approval": {
+          "steps": [
+            {
+              "name": "First Approver",
+              "assigneeType": "field",
+              "assigneeValue": "firstApproverRole",
+              "actions": [
+                {
+                  "label": "Onayla",
+                  "type": "approve"
+                },
+                {
+                  "label": "Revize Et",
+                  "type": "revise",
+                  "requiredFields": [
+                    "revisionNote"
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Second Approver",
+              "assigneeType": "field",
+              "assigneeValue": "secondApproverRole",
+              "actions": [
+                {
+                  "label": "Onayla",
+                  "type": "approve"
+                },
+                {
+                  "label": "Revize Et",
+                  "type": "revise",
+                  "requiredFields": [
+                    "revisionNote"
+                  ]
+                }
+              ]
+            }
+          ],
+          "trackRevisionHistory": true,
+          "onCompleteEvent": "ChangeRequest-approval-completed"
+        }
+      },
+      {
+        "id": "ChangeRequest-approval-email",
+        "type": "action",
+        "label": "Send Approval Email",
+        "position": {
+          "x": 300,
+          "y": 400
+        },
+        "action": {
+          "type": "send-email",
+          "config": {
+            "to": "{{assigneeEmail}}",
+            "subject": "{{triggerData.title}} — Onayınızı bekliyor",
+            "body": "<p>Sayın onaylayıcı,</p><p><strong>{{triggerData.title}}</strong> değişiklik talebi onayınızı beklemektedir.</p>",
+            "contentType": "html"
+          }
+        }
+      },
+      {
+        "id": "ChangeRequest-approval-completion-trigger",
+        "type": "trigger",
+        "label": "On ChangeRequest Approved",
+        "position": {
+          "x": 700,
+          "y": 50
+        },
+        "trigger": {
+          "type": "manual",
+          "resourceName": "ChangeRequest"
+        }
+      },
+      {
+        "id": "ChangeRequest-approval-completion-email",
+        "type": "action",
+        "label": "Send Completion Email",
+        "position": {
+          "x": 700,
+          "y": 160
+        },
+        "action": {
+          "type": "send-email",
+          "config": {
+            "to": "{{creatorEmail}}",
+            "cc": "{{departmentEmails}}",
+            "subject": "{{triggerData.formNo}} — Tum onaylar tamamlandi",
+            "body": "<p>{{triggerData.formNo}} numarali formun onay sureci tamamlanmistir.</p>",
+            "contentType": "html"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "gen_1789563613802_9",
+        "sourceNodeId": "ChangeRequest-approval-trigger",
+        "targetNodeId": "ChangeRequest-approval-condition"
+      },
+      {
+        "id": "gen_1789563613802_10",
+        "sourceNodeId": "ChangeRequest-approval-condition",
+        "targetNodeId": "ChangeRequest-approval-approval",
+        "branch": "true"
+      },
+      {
+        "id": "gen_1789563613802_11",
+        "sourceNodeId": "ChangeRequest-approval-approval",
+        "targetNodeId": "ChangeRequest-approval-email"
+      },
+      {
+        "id": "gen_1789563613802_12",
+        "sourceNodeId": "ChangeRequest-approval-completion-trigger",
+        "targetNodeId": "ChangeRequest-approval-completion-email"
+      }
+    ],
+    "createdAt": "2026-09-16T13:00:13.801Z",
+    "updatedAt": "2026-09-16T13:00:13.801Z"
+  }
+]
